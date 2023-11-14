@@ -16,7 +16,9 @@ export async function run(): Promise<void> {
     // Log the current timestamp, wait, then log the new timestamp
     core.debug(new Date().toTimeString())
     core.debug(process.env.GITHUB_WORKSPACE || '/none')
-    core.debug((await listFiles(process.env.GITHUB_WORKSPACE || '/none')).join(', '))
+    core.debug(
+      (await listFiles(process.env.GITHUB_WORKSPACE || '/none')).join(', ')
+    )
     await wait(parseInt(ms, 10))
     core.debug(new Date().toTimeString())
 

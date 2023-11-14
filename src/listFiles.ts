@@ -1,5 +1,4 @@
 import fs from 'fs'
-import path from 'path'
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.

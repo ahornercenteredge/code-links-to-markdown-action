@@ -2722,6 +2722,36 @@ exports["default"] = _default;
 
 /***/ }),
 
+/***/ 139:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.listFiles = void 0;
+const fs_1 = __importDefault(__nccwpck_require__(147));
+/**
+ * Wait for a number of milliseconds.
+ * @param milliseconds The number of milliseconds to wait.
+ * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
+ */
+async function listFiles(root) {
+    return new Promise(resolve => {
+        if (root === undefined || root === null) {
+            throw new Error('root directory is invalid');
+        }
+        const filelist = fs_1.default.readdirSync(root, { recursive: true });
+        resolve(filelist);
+    });
+}
+exports.listFiles = listFiles;
+
+
+/***/ }),
+
 /***/ 399:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -2754,6 +2784,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const wait_1 = __nccwpck_require__(259);
+const listFiles_1 = __nccwpck_require__(139);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -2765,6 +2796,8 @@ async function run() {
         core.debug(`Waiting ${ms} milliseconds ...`);
         // Log the current timestamp, wait, then log the new timestamp
         core.debug(new Date().toTimeString());
+        core.debug(process.env.GITHUB_WORKSPACE || '/none');
+        core.debug((await (0, listFiles_1.listFiles)(process.env.GITHUB_WORKSPACE || '/none')).join(', '));
         await (0, wait_1.wait)(parseInt(ms, 10));
         core.debug(new Date().toTimeString());
         // Set outputs for other workflow steps to use
