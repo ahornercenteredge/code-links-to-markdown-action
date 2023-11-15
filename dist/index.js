@@ -2792,7 +2792,6 @@ exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const listFiles_1 = __nccwpck_require__(139);
 const mergeCode_1 = __nccwpck_require__(858);
-const promises_1 = __nccwpck_require__(292);
 const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * The main function for the action.
@@ -2809,10 +2808,6 @@ async function run() {
         for (const file of files) {
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
-            const contents = (await (0, promises_1.readFile)(file)).toString();
-            const files_post = await (0, listFiles_1.listFiles)(root);
-            core.debug(contents);
-            core.debug(files_post.join(', '));
         }
         process.chdir(startdir);
         core.debug(files.join(', '));
@@ -3024,14 +3019,6 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
-
-/***/ }),
-
-/***/ 292:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs/promises");
 
 /***/ }),
 
