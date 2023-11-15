@@ -2955,17 +2955,19 @@ async function _extractFileLines(file, range) {
         let result = '';
         let line = 0;
         rs.on('data', chunk => {
+            chunk = chunk.toString();
+            core.debug(`reading line ${line} from file: ${chunk}`);
             if (range != null && range.length === 1 && line === parseInt(range[0])) {
-                result += chunk.toString();
+                result += chunk;
             }
             else if (range != null &&
                 range.length === 2 &&
                 line >= parseInt(range[0]) &&
                 line <= parseInt(range[1])) {
-                result += chunk.toString();
+                result += chunk;
             }
             else {
-                result += chunk.toString();
+                result += chunk;
             }
             line++;
         });
