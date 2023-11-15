@@ -20,7 +20,10 @@ export async function run(): Promise<void> {
     for (const file of files) {
       core.debug(`checking file: ${path.join(root, file)}`)
       await mergeCode(path.join(root, file))
-      core.debug((await readFile(file)).toString())
+      const contents = (await readFile(file)).toString()
+      const files_post = await listFiles(root)
+      core.debug(contents)
+      core.debug(files_post.join(', '))
     }
 
     process.chdir(startdir)

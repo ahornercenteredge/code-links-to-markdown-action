@@ -2809,7 +2809,10 @@ async function run() {
         for (const file of files) {
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
-            core.debug((await (0, promises_1.readFile)(file)).toString());
+            const contents = (await (0, promises_1.readFile)(file)).toString();
+            const files_post = await (0, listFiles_1.listFiles)(root);
+            core.debug(contents);
+            core.debug(files_post.join(', '));
         }
         process.chdir(startdir);
         core.debug(files.join(', '));
