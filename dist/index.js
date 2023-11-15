@@ -2784,10 +2784,15 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const listFiles_1 = __nccwpck_require__(139);
+const mergeCode_1 = __nccwpck_require__(858);
+const promises_1 = __importDefault(__nccwpck_require__(292));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -2798,6 +2803,10 @@ async function run() {
         // get all the markdown files, starting from the rootPath
         core.debug(`rootPath: ${root}`);
         const files = await (0, listFiles_1.listFiles)(root);
+        for (let file in files) {
+            await (0, mergeCode_1.mergeCode)(file);
+            core.debug((await promises_1.default.readFile(file)).toString());
+        }
         core.debug(files.join(', '));
     }
     catch (error) {
@@ -2807,6 +2816,122 @@ async function run() {
     }
 }
 exports.run = run;
+
+
+/***/ }),
+
+/***/ 858:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.mergeCode = void 0;
+const fs_1 = __importDefault(__nccwpck_require__(147));
+/**
+ * Wait for a number of milliseconds.
+ * @param milliseconds The number of milliseconds to wait.
+ * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
+ */
+async function mergeCode(path) {
+    return new Promise((resolve, reject) => {
+        if (path === undefined || path === null || path === '') {
+            throw new Error('path is invalid');
+        }
+        const tempFile = `${path}.temp`;
+        const rs = fs_1.default.createReadStream(path, { encoding: 'utf8', autoClose: true });
+        const ws = fs_1.default.createWriteStream(tempFile, {
+            encoding: 'utf8',
+            autoClose: true
+        });
+        rs.on('data', async (chunk) => {
+            chunk = chunk.toString();
+            // Find any replaceable code blocks
+            const regex = /```CODE\(.*\)```/g;
+            const match = chunk.match(regex);
+            if (match != null) {
+                // Get the replacement text
+                const args = match[0].split('|');
+                const file = args[0];
+                if (!fs_1.default.existsSync(file)) {
+                    throw 'code path is invalid';
+                }
+                let lines = [];
+                if (args[1]) {
+                    if (args[1].indexOf('-') === -1) {
+                        lines.push(args[1]);
+                    }
+                    else {
+                        lines = args[1].split('-');
+                    }
+                }
+                const replacement = await _extractFileLines(file, lines);
+                chunk.replace(match[0], replacement);
+            }
+            ws.write(chunk);
+        });
+        rs.on('end', () => {
+            ws.end();
+        });
+        ws.on('finish', async () => {
+            try {
+                // Delete the original file
+                fs_1.default.unlink(path, err => {
+                    if (err)
+                        throw err;
+                });
+                // Rename the new file to replace the original
+                await _renameFile(tempFile, path);
+                resolve();
+            }
+            catch (err) {
+                reject(`Error renaming ${path} to ${tempFile}: ${err}`);
+            }
+        });
+        rs.on('error', error => reject(`Error: Error reading ${path} => ${error.message}`));
+        ws.on('error', error => reject(`Error: Error writing to ${tempFile} => ${error.message}`));
+    });
+}
+exports.mergeCode = mergeCode;
+async function _renameFile(oldPath, newPath) {
+    return new Promise((resolve, reject) => {
+        fs_1.default.rename(oldPath, newPath, error => {
+            if (error) {
+                reject(error);
+            }
+            else {
+                resolve();
+            }
+        });
+    });
+}
+async function _extractFileLines(file, range) {
+    return new Promise((resolve, reject) => {
+        const rs = fs_1.default.createReadStream(file, { encoding: 'utf8', autoClose: true });
+        let result = '';
+        let line = 0;
+        rs.on('data', chunk => {
+            if (range.length === 1 && line === parseInt(range[0])) {
+                result += chunk.toString();
+            }
+            else if (range.length === 2 &&
+                line >= parseInt(range[0]) &&
+                line <= parseInt(range[1])) {
+                result += chunk.toString();
+            }
+            line++;
+        });
+        rs.on('end', () => {
+            resolve(result);
+        });
+        rs.on('error', err => {
+            reject(err);
+        });
+    });
+}
 
 
 /***/ }),
@@ -2840,6 +2965,14 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
+
+/***/ }),
+
+/***/ 292:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("fs/promises");
 
 /***/ }),
 

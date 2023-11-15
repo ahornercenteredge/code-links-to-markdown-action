@@ -62,8 +62,12 @@ export async function mergeCode(path: string): Promise<void> {
       }
     })
 
-    rs.on('error', (error) => reject(`Error: Error reading ${path} => ${error.message}`))
-    ws.on('error', (error) => reject(`Error: Error writing to ${tempFile} => ${error.message}`))
+    rs.on('error', error =>
+      reject(`Error: Error reading ${path} => ${error.message}`)
+    )
+    ws.on('error', error =>
+      reject(`Error: Error writing to ${tempFile} => ${error.message}`)
+    )
   })
 }
 
@@ -84,7 +88,7 @@ async function _renameFile(
 
 async function _extractFileLines(
   file: fs.PathLike,
-  range: string[],
+  range: string[]
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const rs = fs.createReadStream(file, { encoding: 'utf8', autoClose: true })
@@ -93,7 +97,11 @@ async function _extractFileLines(
     rs.on('data', chunk => {
       if (range.length === 1 && line === parseInt(range[0])) {
         result += chunk.toString()
-      } else if (range.length === 2 && line >= parseInt(range[0]) && line <= parseInt(range[1])) {
+      } else if (
+        range.length === 2 &&
+        line >= parseInt(range[0]) &&
+        line <= parseInt(range[1])
+      ) {
         result += chunk.toString()
       }
       line++
@@ -103,7 +111,7 @@ async function _extractFileLines(
       resolve(result)
     })
 
-    rs.on('error', (err) => {
+    rs.on('error', err => {
       reject(err)
     })
   })
