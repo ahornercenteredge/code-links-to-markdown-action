@@ -2803,7 +2803,8 @@ async function run() {
         // get all the markdown files, starting from the rootPath
         core.debug(`rootPath: ${root}`);
         const files = await (0, listFiles_1.listFiles)(root);
-        for (let file in files) {
+        for (const file of files) {
+            core.debug(`checking file: ${file}`);
             await (0, mergeCode_1.mergeCode)(file);
             core.debug((await promises_1.default.readFile(file)).toString());
         }
@@ -2857,11 +2858,11 @@ async function mergeCode(path) {
                 const args = match[0].split('|');
                 const file = args[0];
                 if (!fs_1.default.existsSync(file)) {
-                    throw 'code path is invalid';
+                    throw new Error('code path is invalid');
                 }
                 let lines = [];
                 if (args[1]) {
-                    if (args[1].indexOf('-') === -1) {
+                    if (args[1].includes('-')) {
                         lines.push(args[1]);
                     }
                     else {
@@ -2888,11 +2889,11 @@ async function mergeCode(path) {
                 resolve();
             }
             catch (err) {
-                reject(`Error renaming ${path} to ${tempFile}: ${err}`);
+                reject(new Error(`Error renaming ${path} to ${tempFile}: ${err}`));
             }
         });
-        rs.on('error', error => reject(`Error: Error reading ${path} => ${error.message}`));
-        ws.on('error', error => reject(`Error: Error writing to ${tempFile} => ${error.message}`));
+        rs.on('error', error => reject(new Error(`Error: Error reading ${path} => ${error.message}`)));
+        ws.on('error', error => reject(new Error(`Error: Error writing to ${tempFile} => ${error.message}`)));
     });
 }
 exports.mergeCode = mergeCode;

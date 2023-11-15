@@ -14,7 +14,8 @@ export async function run(): Promise<void> {
     // get all the markdown files, starting from the rootPath
     core.debug(`rootPath: ${root}`)
     const files = await listFiles(root)
-    for (let file in files) {
+    for (const file of files) {
+      core.debug(`checking file: ${file}`)
       await mergeCode(file)
       core.debug((await fs.readFile(file)).toString())
     }

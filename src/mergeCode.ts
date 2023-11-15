@@ -27,11 +27,11 @@ export async function mergeCode(path: string): Promise<void> {
         const args = match[0].split('|')
         const file = args[0]
         if (!fs.existsSync(file)) {
-          throw 'code path is invalid'
+          throw new Error('code path is invalid')
         }
         let lines: string[] = []
         if (args[1]) {
-          if (args[1].indexOf('-') === -1) {
+          if (args[1].includes('-')) {
             lines.push(args[1])
           } else {
             lines = args[1].split('-')
@@ -58,15 +58,17 @@ export async function mergeCode(path: string): Promise<void> {
         await _renameFile(tempFile, path)
         resolve()
       } catch (err) {
-        reject(`Error renaming ${path} to ${tempFile}: ${err}`)
+        reject(new Error(`Error renaming ${path} to ${tempFile}: ${err}`))
       }
     })
 
     rs.on('error', error =>
-      reject(`Error: Error reading ${path} => ${error.message}`)
+      reject(new Error(`Error: Error reading ${path} => ${error.message}`))
     )
     ws.on('error', error =>
-      reject(`Error: Error writing to ${tempFile} => ${error.message}`)
+      reject(
+        new Error(`Error: Error writing to ${tempFile} => ${error.message}`)
+      )
     )
   })
 }

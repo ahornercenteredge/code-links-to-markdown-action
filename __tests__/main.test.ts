@@ -69,8 +69,8 @@ describe('action', () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation((name: string): string => {
       switch (name) {
-        case 'milliseconds':
-          return 'this is not a number'
+        case 'rootPath':
+          return 'root directory is invalid'
         default:
           return ''
       }
@@ -82,7 +82,7 @@ describe('action', () => {
     // Verify that all of the core library functions were called correctly
     expect(setFailedMock).toHaveBeenNthCalledWith(
       1,
-      'milliseconds not a number'
+      'root directory is invalid'
     )
     expect(errorMock).not.toHaveBeenCalled()
   })

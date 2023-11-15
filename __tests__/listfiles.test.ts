@@ -14,7 +14,7 @@ describe('listFiles.ts', () => {
   })
 
   it('lists files with a valid path', async () => {
-    const input = 'src'
+    const input = 'example'
     const files = await listFiles(input)
 
     expect(files.length).toBeGreaterThan(0)
