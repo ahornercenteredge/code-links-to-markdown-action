@@ -2901,7 +2901,9 @@ async function mergeCode(filePath) {
                         lines = args[1].split('-');
                     }
                 }
+                core.debug(lines.join(', '));
                 const replacement = await _extractFileLines(file, lines);
+                core.debug(replacement);
                 chunk.replace(match[0], replacement);
             }
             ws.write(chunk);
