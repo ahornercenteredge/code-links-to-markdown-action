@@ -2808,10 +2808,6 @@ async function run() {
         core.debug(`rootPath: ${root}`);
         const files = await (0, listFiles_1.listFiles)(root);
         for (const file of files) {
-            const contents1 = await (0, promises_1.readFile)(path_1.default.join(root, file), {
-                encoding: 'utf8'
-            });
-            core.debug(contents1.toString());
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
             core.debug(`file still exists: ${fs_1.default.existsSync(path_1.default.join(root, file)).toString()}`);
