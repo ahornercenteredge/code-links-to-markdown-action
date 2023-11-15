@@ -2922,7 +2922,10 @@ async function mergeCode(filePath) {
                 }
                 const replacement = await _extractFileLines(file, lines);
                 if (replacement) {
-                    line = replacement.join('\n');
+                    replacement.forEach(l => {
+                        ws.write(l);
+                    });
+                    return;
                 }
                 core.debug(`final line: ${line}`);
             }
