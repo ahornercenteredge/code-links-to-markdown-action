@@ -58,8 +58,3 @@ jobs:
         uses: ./
         with:
           rootPath: "${{ github.workspace }}/example"
-
-      - name: Print Sample
-        uses: andstor/file-reader-action@v1
-        with:
-          path: /home/runner/work/code-links-to-markdown-action/code-links-to-markdown-action/example/ReadMe.md
