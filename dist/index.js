@@ -2794,6 +2794,7 @@ const listFiles_1 = __nccwpck_require__(139);
 const mergeCode_1 = __nccwpck_require__(858);
 const promises_1 = __nccwpck_require__(292);
 const path_1 = __importDefault(__nccwpck_require__(17));
+const fs_1 = __importDefault(__nccwpck_require__(147));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -2813,6 +2814,7 @@ async function run() {
             core.debug(contents1.toString());
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
+            core.debug(`file still exists: ${fs_1.default.existsSync(path_1.default.join(root, file)).toString()}`);
             const contents = await (0, promises_1.readFile)(path_1.default.join(root, file), {
                 encoding: 'utf8'
             });

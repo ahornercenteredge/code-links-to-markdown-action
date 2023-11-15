@@ -3,7 +3,7 @@ import { listFiles } from './listFiles'
 import { mergeCode } from './mergeCode'
 import { readFile } from 'fs/promises'
 import path from 'path'
-
+import fs from 'fs'
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -25,6 +25,10 @@ export async function run(): Promise<void> {
       core.debug(contents1.toString())
       core.debug(`checking file: ${path.join(root, file)}`)
       await mergeCode(path.join(root, file))
+
+      core.debug(
+        `file still exists: ${fs.existsSync(path.join(root, file)).toString()}`
+      )
       const contents = await readFile(path.join(root, file), {
         encoding: 'utf8'
       })
