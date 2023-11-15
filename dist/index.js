@@ -2864,6 +2864,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.mergeCode = void 0;
 const core = __importStar(__nccwpck_require__(186));
+const events_1 = __importDefault(__nccwpck_require__(361));
 const fs_1 = __importDefault(__nccwpck_require__(147));
 const path_1 = __importDefault(__nccwpck_require__(17));
 const readline_1 = __importDefault(__nccwpck_require__(521));
@@ -2918,8 +2919,11 @@ async function mergeCode(filePath) {
                     core.debug(lines.join(', '));
                 }
                 const replacement = await _extractFileLines(file, lines);
-                core.debug(replacement);
-                line.replace(match[0], replacement);
+                if (replacement) {
+                    core.debug(replacement);
+                    line.replace(match[0], replacement);
+                }
+                core.debug(`final line: ${line}`);
             }
             ws.write(line);
         });
@@ -2959,7 +2963,7 @@ async function _renameFile(oldPath, newPath) {
     });
 }
 async function _extractFileLines(file, range) {
-    return new Promise((resolve, reject) => {
+    try {
         const rl = readline_1.default.createInterface({
             input: fs_1.default.createReadStream(file),
             crlfDelay: Infinity
@@ -2985,13 +2989,13 @@ async function _extractFileLines(file, range) {
             }
             i++;
         });
-        rl.on('end', () => {
-            resolve(result);
-        });
-        rl.on('error', err => {
-            reject(err);
-        });
-    });
+        await events_1.default.once(rl, 'close');
+        return result;
+    }
+    catch (err) {
+        core.debug(`ERROR: ${err}`);
+        return undefined;
+    }
 }
 
 

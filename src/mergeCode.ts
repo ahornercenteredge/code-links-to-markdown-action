@@ -1,4 +1,5 @@
 import * as core from '@actions/core'
+import events from 'events'
 import fs from 'fs'
 import path from 'path'
 import readline from 'readline'
@@ -54,8 +55,11 @@ export async function mergeCode(filePath: string): Promise<void> {
           core.debug(lines.join(', '))
         }
         const replacement = await _extractFileLines(file, lines)
-        core.debug(replacement)
-        line.replace(match[0], replacement)
+        if (replacement) {
+          core.debug(replacement)
+          line.replace(match[0], replacement)
+        }
+        core.debug(`final line: ${line}`)
       }
 
       ws.write(line)
@@ -108,8 +112,8 @@ async function _renameFile(
 async function _extractFileLines(
   file: fs.PathLike,
   range: string[] | null
-): Promise<string> {
-  return new Promise((resolve, reject) => {
+): Promise<string | undefined> {
+  try {
     const rl = readline.createInterface({
       input: fs.createReadStream(file),
       crlfDelay: Infinity
@@ -137,12 +141,10 @@ async function _extractFileLines(
       i++
     })
 
-    rl.on('end', () => {
-      resolve(result)
-    })
-
-    rl.on('error', err => {
-      reject(err)
-    })
-  })
+    await events.once(rl, 'close')
+    return result
+  } catch (err) {
+    core.debug(`ERROR: ${err}`)
+    return undefined
+  }
 }
