@@ -2833,18 +2833,22 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.mergeCode = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(147));
+const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
  * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
  */
-async function mergeCode(path) {
+async function mergeCode(filePath) {
     return new Promise((resolve, reject) => {
-        if (path === undefined || path === null || path === '') {
+        if (filePath === undefined || filePath === null || filePath === '') {
             throw new Error('path is invalid');
         }
-        const tempFile = `${path}.temp`;
-        const rs = fs_1.default.createReadStream(path, { encoding: 'utf8', autoClose: true });
+        const tempFile = `${filePath}.temp`;
+        const rs = fs_1.default.createReadStream(filePath, {
+            encoding: 'utf8',
+            autoClose: true
+        });
         const ws = fs_1.default.createWriteStream(tempFile, {
             encoding: 'utf8',
             autoClose: true
@@ -2857,7 +2861,7 @@ async function mergeCode(path) {
             if (match != null) {
                 // Get the replacement text
                 const args = match[0].split('|');
-                const file = args[0];
+                const file = path_1.default.resolve(args[0]);
                 if (!fs_1.default.existsSync(file)) {
                     throw new Error('code path is invalid');
                 }
@@ -2881,19 +2885,19 @@ async function mergeCode(path) {
         ws.on('finish', async () => {
             try {
                 // Delete the original file
-                fs_1.default.unlink(path, err => {
+                fs_1.default.unlink(filePath, err => {
                     if (err)
                         throw err;
                 });
                 // Rename the new file to replace the original
-                await _renameFile(tempFile, path);
+                await _renameFile(tempFile, filePath);
                 resolve();
             }
             catch (err) {
-                reject(new Error(`Error renaming ${path} to ${tempFile}: ${err}`));
+                reject(new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`));
             }
         });
-        rs.on('error', error => reject(new Error(`Error: Error reading ${path} => ${error.message}`)));
+        rs.on('error', error => reject(new Error(`Error: Error reading ${filePath} => ${error.message}`)));
         ws.on('error', error => reject(new Error(`Error: Error writing to ${tempFile} => ${error.message}`)));
     });
 }

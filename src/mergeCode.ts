@@ -1,17 +1,21 @@
 import fs from 'fs'
+import path from 'path'
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
  * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
  */
-export async function mergeCode(path: string): Promise<void> {
+export async function mergeCode(filePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    if (path === undefined || path === null || path === '') {
+    if (filePath === undefined || filePath === null || filePath === '') {
       throw new Error('path is invalid')
     }
 
-    const tempFile = `${path}.temp`
-    const rs = fs.createReadStream(path, { encoding: 'utf8', autoClose: true })
+    const tempFile = `${filePath}.temp`
+    const rs = fs.createReadStream(filePath, {
+      encoding: 'utf8',
+      autoClose: true
+    })
     const ws = fs.createWriteStream(tempFile, {
       encoding: 'utf8',
       autoClose: true
@@ -25,7 +29,7 @@ export async function mergeCode(path: string): Promise<void> {
       if (match != null) {
         // Get the replacement text
         const args = match[0].split('|')
-        const file = args[0]
+        const file = path.resolve(args[0])
         if (!fs.existsSync(file)) {
           throw new Error('code path is invalid')
         }
@@ -51,19 +55,19 @@ export async function mergeCode(path: string): Promise<void> {
     ws.on('finish', async () => {
       try {
         // Delete the original file
-        fs.unlink(path, err => {
+        fs.unlink(filePath, err => {
           if (err) throw err
         })
         // Rename the new file to replace the original
-        await _renameFile(tempFile, path)
+        await _renameFile(tempFile, filePath)
         resolve()
       } catch (err) {
-        reject(new Error(`Error renaming ${path} to ${tempFile}: ${err}`))
+        reject(new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`))
       }
     })
 
     rs.on('error', error =>
-      reject(new Error(`Error: Error reading ${path} => ${error.message}`))
+      reject(new Error(`Error: Error reading ${filePath} => ${error.message}`))
     )
     ws.on('error', error =>
       reject(
