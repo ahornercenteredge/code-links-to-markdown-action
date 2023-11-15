@@ -2880,19 +2880,19 @@ async function mergeCode(filePath) {
             throw new Error('file path is invalid');
         }
         const tempFile = `${filePath}.temp`;
-        const rs = fs_1.default.createReadStream(filePath, {
-            encoding: 'utf8',
-            autoClose: true
+        const rl = readline_1.default.createInterface({
+            input: fs_1.default.createReadStream(filePath),
+            crlfDelay: Infinity
         });
         const ws = fs_1.default.createWriteStream(tempFile, {
             encoding: 'utf8',
             autoClose: true
         });
-        rs.on('data', async (chunk) => {
-            chunk = chunk.toString();
+        rl.on('line', async (line) => {
+            line = line.toString();
             // Find any replaceable code blocks
             const regex = /```CODE\((.*)\)```/;
-            const match = chunk.match(regex);
+            const match = line.match(regex);
             if (match != null) {
                 core.debug(`found match in file ${filePath}: ${match.join(' : ')}`);
                 // Get the replacement text
@@ -2921,11 +2921,11 @@ async function mergeCode(filePath) {
                 }
                 const replacement = await _extractFileLines(file, lines);
                 core.debug(replacement);
-                chunk.replace(match[0], replacement);
+                line.replace(match[0], replacement);
             }
-            ws.write(chunk);
+            ws.write(line);
         });
-        rs.on('end', () => {
+        rl.on('end', () => {
             ws.end();
         });
         ws.on('finish', async () => {
@@ -2943,7 +2943,7 @@ async function mergeCode(filePath) {
                 reject(new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`));
             }
         });
-        rs.on('error', error => reject(new Error(`Error: Error reading ${filePath} => ${error.message}`)));
+        rl.on('error', error => reject(new Error(`Error: Error reading ${filePath} => ${error.message}`)));
         ws.on('error', error => reject(new Error(`Error: Error writing to ${tempFile} => ${error.message}`)));
     });
 }
