@@ -2740,7 +2740,7 @@ const fs_1 = __importDefault(__nccwpck_require__(147));
  */
 async function listFiles(root) {
     return new Promise(resolve => {
-        if (root === undefined || root === null) {
+        if (root === undefined || root === null || root === '') {
             throw new Error('root directory is invalid');
         }
         const filelist = fs_1.default.readdirSync(root, { recursive: true });
@@ -2783,7 +2783,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
-const wait_1 = __nccwpck_require__(259);
 const listFiles_1 = __nccwpck_require__(139);
 /**
  * The main function for the action.
@@ -2791,14 +2790,12 @@ const listFiles_1 = __nccwpck_require__(139);
  */
 async function run() {
     try {
-        const ms = core.getInput('milliseconds');
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
+        const root = core.getInput('rootPath');
         // Log the current timestamp, wait, then log the new timestamp
         core.debug(new Date().toTimeString());
+        core.debug(root);
         core.debug(process.env.GITHUB_WORKSPACE || '/none');
-        core.debug((await (0, listFiles_1.listFiles)(process.env.GITHUB_WORKSPACE || '/none')).join(', '));
-        await (0, wait_1.wait)(parseInt(ms, 10));
+        core.debug((await (0, listFiles_1.listFiles)(process.env.GITHUB_WORKSPACE || root)).join(', '));
         core.debug(new Date().toTimeString());
         // Set outputs for other workflow steps to use
         core.setOutput('time', new Date().toTimeString());
@@ -2810,31 +2807,6 @@ async function run() {
     }
 }
 exports.run = run;
-
-
-/***/ }),
-
-/***/ 259:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = void 0;
-/**
- * Wait for a number of milliseconds.
- * @param milliseconds The number of milliseconds to wait.
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise(resolve => {
-        if (isNaN(milliseconds)) {
-            throw new Error('milliseconds not a number');
-        }
-        setTimeout(() => resolve('done!'), milliseconds);
-    });
-}
-exports.wait = wait;
 
 
 /***/ }),
