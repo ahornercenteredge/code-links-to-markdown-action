@@ -2894,14 +2894,17 @@ async function mergeCode(filePath) {
                 }
                 let lines = [];
                 if (args[1]) {
+                    core.debug(args[1]);
                     if (args[1].includes('-')) {
-                        lines.push(args[1]);
-                    }
-                    else {
                         lines = args[1].split('-');
                     }
+                    else {
+                        lines.push(args[1]);
+                    }
                 }
-                core.debug(lines.join(', '));
+                else {
+                    lines = null;
+                }
                 const replacement = await _extractFileLines(file, lines);
                 core.debug(replacement);
                 chunk.replace(match[0], replacement);
@@ -2949,12 +2952,16 @@ async function _extractFileLines(file, range) {
         let result = '';
         let line = 0;
         rs.on('data', chunk => {
-            if (range.length === 1 && line === parseInt(range[0])) {
+            if (range != null && range.length === 1 && line === parseInt(range[0])) {
                 result += chunk.toString();
             }
-            else if (range.length === 2 &&
+            else if (range != null &&
+                range.length === 2 &&
                 line >= parseInt(range[0]) &&
                 line <= parseInt(range[1])) {
+                result += chunk.toString();
+            }
+            else {
                 result += chunk.toString();
             }
             line++;

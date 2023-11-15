@@ -37,15 +37,18 @@ export async function mergeCode(filePath: string): Promise<void> {
         if (!fs.existsSync(file)) {
           throw new Error('code path is invalid')
         }
-        let lines: string[] = []
+
+        let lines: string[] | null = []
         if (args[1]) {
+          core.debug(args[1])
           if (args[1].includes('-')) {
-            lines.push(args[1])
-          } else {
             lines = args[1].split('-')
+          } else {
+            lines.push(args[1])
           }
+        } else {
+          lines = null
         }
-        core.debug(lines.join(', '))
         const replacement = await _extractFileLines(file, lines)
         core.debug(replacement)
         chunk.replace(match[0], replacement)
@@ -100,20 +103,23 @@ async function _renameFile(
 
 async function _extractFileLines(
   file: fs.PathLike,
-  range: string[]
+  range: string[] | null
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const rs = fs.createReadStream(file, { encoding: 'utf8', autoClose: true })
     let result = ''
     let line = 0
     rs.on('data', chunk => {
-      if (range.length === 1 && line === parseInt(range[0])) {
+      if (range != null && range.length === 1 && line === parseInt(range[0])) {
         result += chunk.toString()
       } else if (
+        range != null &&
         range.length === 2 &&
         line >= parseInt(range[0]) &&
         line <= parseInt(range[1])
       ) {
+        result += chunk.toString()
+      } else {
         result += chunk.toString()
       }
       line++
