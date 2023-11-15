@@ -2792,9 +2792,7 @@ exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const listFiles_1 = __nccwpck_require__(139);
 const mergeCode_1 = __nccwpck_require__(858);
-const promises_1 = __nccwpck_require__(292);
 const path_1 = __importDefault(__nccwpck_require__(17));
-const fs_1 = __importDefault(__nccwpck_require__(147));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -2810,14 +2808,7 @@ async function run() {
         for (const file of files) {
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
-            core.debug(`file still exists: ${fs_1.default.existsSync(path_1.default.join(root, file)).toString()}`);
-            const contents = await (0, promises_1.readFile)(path_1.default.join(root, file), {
-                encoding: 'utf8'
-            });
-            core.debug(contents.toString());
         }
-        const filestwo = await (0, listFiles_1.listFiles)(root);
-        core.debug(filestwo.join(', '));
         process.chdir(startdir);
         core.debug(files.join(', '));
     }
@@ -2917,7 +2908,9 @@ async function mergeCode(filePath) {
             const replacement = await _extractFileLines(file, lines);
             if (replacement) {
                 for (const l of replacement) {
+                    ws.write('```\r\n');
                     ws.write(`${l}\r\n`);
+                    ws.write('```\r\n');
                 }
                 continue;
             }

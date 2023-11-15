@@ -20,19 +20,7 @@ export async function run(): Promise<void> {
     for (const file of files) {
       core.debug(`checking file: ${path.join(root, file)}`)
       await mergeCode(path.join(root, file))
-
-      core.debug(
-        `file still exists: ${fs.existsSync(path.join(root, file)).toString()}`
-      )
-      const contents = await readFile(path.join(root, file), {
-        encoding: 'utf8'
-      })
-
-      core.debug(contents.toString())
     }
-
-    const filestwo = await listFiles(root)
-    core.debug(filestwo.join(', '))
 
     process.chdir(startdir)
 
