@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import fs from 'fs'
+import path from 'path'
 import readline from 'readline'
 /**
  * Wait for a number of milliseconds.
@@ -31,7 +32,7 @@ export async function mergeCode(filePath: string): Promise<void> {
         core.debug(`found match in file ${filePath}: ${match.join(' : ')}`)
         // Get the replacement text
         const args = match[1].split('|')
-        const file = fs.realpathSync(args[0])
+        const file = path.resolve(path.dirname(filePath), args[0])
         core.debug(args[0])
         core.debug(file)
         if (!fs.existsSync(file)) {
