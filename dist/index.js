@@ -2905,6 +2905,9 @@ async function mergeCode(filePath) {
                 else {
                     lines = null;
                 }
+                if (lines) {
+                    core.debug(lines.join(', '));
+                }
                 const replacement = await _extractFileLines(file, lines);
                 core.debug(replacement);
                 chunk.replace(match[0], replacement);
