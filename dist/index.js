@@ -2920,8 +2920,8 @@ async function mergeCode(filePath) {
                 }
                 const replacement = await _extractFileLines(file, lines);
                 if (replacement) {
-                    core.debug(replacement);
-                    line.replace(match[0], replacement);
+                    core.debug(replacement.join('\\n'));
+                    line = replacement.join('\n');
                 }
                 core.debug(`final line: ${line}`);
             }
@@ -2968,24 +2968,24 @@ async function _extractFileLines(file, range) {
             input: fs_1.default.createReadStream(file),
             crlfDelay: Infinity
         });
-        let result = '';
+        let result = [];
         let i = 1;
         rl.on('line', line => {
             line = line.toString();
             if (range != null && range.length === 1 && i === parseInt(range[0])) {
                 core.debug(`extracting line ${i} from file: ${line}`);
-                result += line;
+                result.push(line);
             }
             else if (range != null &&
                 range.length === 2 &&
                 i >= parseInt(range[0]) &&
                 i <= parseInt(range[1])) {
                 core.debug(`extracting line ${i} from file: ${line}`);
-                result += line;
+                result.push(line);
             }
             else if (range === null) {
                 core.debug(`extracting line ${i} from file: ${line}`);
-                result += line;
+                result.push(line);
             }
             i++;
         });
