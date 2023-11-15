@@ -2917,12 +2917,12 @@ async function mergeCode(filePath) {
             const replacement = await _extractFileLines(file, lines);
             if (replacement) {
                 for (const l of replacement) {
-                    ws.write(l);
+                    ws.write(`${l}\r\n`);
                 }
                 continue;
             }
         }
-        ws.write(line);
+        ws.write(`${line}\r\n`);
     }
     ws.end();
     try {
