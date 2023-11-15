@@ -2805,7 +2805,7 @@ async function run() {
         core.debug(`rootPath: ${root}`);
         const files = await (0, listFiles_1.listFiles)(root);
         for (const file of files) {
-            core.debug(`checking file: ${file}`);
+            core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
             core.debug((await promises_1.default.readFile(file)).toString());
         }

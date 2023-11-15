@@ -16,7 +16,7 @@ export async function run(): Promise<void> {
     core.debug(`rootPath: ${root}`)
     const files = await listFiles(root)
     for (const file of files) {
-      core.debug(`checking file: ${file}`)
+      core.debug(`checking file: ${path.join(root, file)}`)
       await mergeCode(path.join(root, file))
       core.debug((await fs.readFile(file)).toString())
     }
