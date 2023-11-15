@@ -2809,7 +2809,9 @@ async function run() {
         for (const file of files) {
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
-            const contents = await (0, promises_1.readFile)(path_1.default.join(root, file));
+            const contents = await (0, promises_1.readFile)(path_1.default.join(root, file), {
+                encoding: 'utf8'
+            });
             core.debug(contents.toString());
         }
         process.chdir(startdir);

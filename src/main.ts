@@ -20,7 +20,9 @@ export async function run(): Promise<void> {
     for (const file of files) {
       core.debug(`checking file: ${path.join(root, file)}`)
       await mergeCode(path.join(root, file))
-      const contents = await readFile(path.join(root, file))
+      const contents = await readFile(path.join(root, file), {
+        encoding: 'utf8'
+      })
 
       core.debug(contents.toString())
     }
