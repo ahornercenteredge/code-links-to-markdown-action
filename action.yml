@@ -1,5 +1,11 @@
 name: 'Code Blocks to Markdown'
 description: 'Replace Github permalinks with code blocks in markdown format.'
+inputs:
+  rootPath:
+    description: 'The path to search for files.'
+    required: false
+    default: '1000'
+
 runs:
   using: node20
   main: dist/index.js

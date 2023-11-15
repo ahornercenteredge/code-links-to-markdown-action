@@ -1,5 +1,4 @@
 import * as core from '@actions/core'
-import { wait } from './wait'
 import { listFiles } from './listFiles'
 
 /**
@@ -8,18 +7,15 @@ import { listFiles } from './listFiles'
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+    const root: string = core.getInput('rootPath')
 
     // Log the current timestamp, wait, then log the new timestamp
     core.debug(new Date().toTimeString())
+    core.debug(root)
     core.debug(process.env.GITHUB_WORKSPACE || '/none')
     core.debug(
-      (await listFiles(process.env.GITHUB_WORKSPACE || '/none')).join(', ')
+      (await listFiles(process.env.GITHUB_WORKSPACE || root)).join(', ')
     )
-    await wait(parseInt(ms, 10))
     core.debug(new Date().toTimeString())
 
     // Set outputs for other workflow steps to use

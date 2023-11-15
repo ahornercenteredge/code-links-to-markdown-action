@@ -6,7 +6,7 @@ import fs from 'fs'
  */
 export async function listFiles(root: string): Promise<string[]> {
   return new Promise(resolve => {
-    if (root === undefined || root === null) {
+    if (root === undefined || root === null || root === '') {
       throw new Error('root directory is invalid')
     }
 
