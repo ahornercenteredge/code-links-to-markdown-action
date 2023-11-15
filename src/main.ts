@@ -16,6 +16,7 @@ export async function run(): Promise<void> {
     core.debug(
       (await listFiles(process.env.GITHUB_WORKSPACE || root)).join(', ')
     )
+    
     core.debug(new Date().toTimeString())
 
     // Set outputs for other workflow steps to use
