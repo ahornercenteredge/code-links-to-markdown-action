@@ -2793,6 +2793,7 @@ const core = __importStar(__nccwpck_require__(186));
 const listFiles_1 = __nccwpck_require__(139);
 const mergeCode_1 = __nccwpck_require__(858);
 const promises_1 = __importDefault(__nccwpck_require__(292));
+const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -2805,7 +2806,7 @@ async function run() {
         const files = await (0, listFiles_1.listFiles)(root);
         for (const file of files) {
             core.debug(`checking file: ${file}`);
-            await (0, mergeCode_1.mergeCode)(file);
+            await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
             core.debug((await promises_1.default.readFile(file)).toString());
         }
         core.debug(files.join(', '));

@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import { listFiles } from './listFiles'
 import { mergeCode } from './mergeCode'
 import fs from 'fs/promises'
+import path from 'path'
 
 /**
  * The main function for the action.
@@ -16,7 +17,7 @@ export async function run(): Promise<void> {
     const files = await listFiles(root)
     for (const file of files) {
       core.debug(`checking file: ${file}`)
-      await mergeCode(file)
+      await mergeCode(path.join(root, file))
       core.debug((await fs.readFile(file)).toString())
     }
 
