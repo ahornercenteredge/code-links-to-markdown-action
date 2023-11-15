@@ -1,4 +1,5 @@
 import fs from 'fs'
+import path from 'path'
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
@@ -10,7 +11,10 @@ export async function listFiles(root: string): Promise<string[]> {
       throw new Error('root directory is invalid')
     }
 
-    const filelist = fs.readdirSync(root, { recursive: true })
+    const filelist = fs.readdirSync(root, { recursive: true }).filter(f => {
+      const file = f as string
+      return path.extname(file).toLowerCase() === '.md'
+    })
     resolve(filelist as string[])
   })
 }

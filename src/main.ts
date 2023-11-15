@@ -9,18 +9,11 @@ export async function run(): Promise<void> {
   try {
     const root: string = core.getInput('rootPath')
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    core.debug(root)
-    core.debug(process.env.GITHUB_WORKSPACE || '/none')
-    core.debug(
-      (await listFiles(process.env.GITHUB_WORKSPACE || root)).join(', ')
-    )
-    
-    core.debug(new Date().toTimeString())
+    // get all the markdown files, starting from the rootPath
+    core.debug(`rootPath: ${root}`)
+    const files = await listFiles(root)
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
+    core.debug(files.join(', '))
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) core.setFailed(error.message)

@@ -57,7 +57,7 @@ jobs:
         id: test-action
         uses: ./
         with:
-          rootPath: "${{ github.workspace }}/src"
+          rootPath: "${{ github.workspace }}/example"
 
       - name: Print Output
         id: output

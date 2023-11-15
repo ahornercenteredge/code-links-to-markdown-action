@@ -2733,6 +2733,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.listFiles = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(147));
+const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
@@ -2743,7 +2744,10 @@ async function listFiles(root) {
         if (root === undefined || root === null || root === '') {
             throw new Error('root directory is invalid');
         }
-        const filelist = fs_1.default.readdirSync(root, { recursive: true });
+        const filelist = fs_1.default.readdirSync(root, { recursive: true }).filter(f => {
+            const file = f;
+            return path_1.default.extname(file).toLowerCase() === '.md';
+        });
         resolve(filelist);
     });
 }
@@ -2791,14 +2795,10 @@ const listFiles_1 = __nccwpck_require__(139);
 async function run() {
     try {
         const root = core.getInput('rootPath');
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        core.debug(root);
-        core.debug(process.env.GITHUB_WORKSPACE || '/none');
-        core.debug((await (0, listFiles_1.listFiles)(process.env.GITHUB_WORKSPACE || root)).join(', '));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput('time', new Date().toTimeString());
+        // get all the markdown files, starting from the rootPath
+        core.debug(`rootPath: ${root}`);
+        const files = await (0, listFiles_1.listFiles)(root);
+        core.debug(files.join(', '));
     }
     catch (error) {
         // Fail the workflow run if an error occurs
