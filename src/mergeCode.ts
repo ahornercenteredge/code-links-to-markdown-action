@@ -1,3 +1,4 @@
+import * as core from '@actions/core'
 import fs from 'fs'
 import path from 'path'
 /**
@@ -8,7 +9,7 @@ import path from 'path'
 export async function mergeCode(filePath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     if (filePath === undefined || filePath === null || filePath === '') {
-      throw new Error('path is invalid')
+      throw new Error('file path is invalid')
     }
 
     const tempFile = `${filePath}.temp`
@@ -27,9 +28,12 @@ export async function mergeCode(filePath: string): Promise<void> {
       const regex = /```CODE\(.*\)```/g
       const match = chunk.match(regex)
       if (match != null) {
+        core.debug(`found match in file ${filePath}: ${match[0]}`)
         // Get the replacement text
         const args = match[0].split('|')
         const file = path.resolve(args[0])
+        core.debug(args[0])
+        core.debug(file)
         if (!fs.existsSync(file)) {
           throw new Error('code path is invalid')
         }
