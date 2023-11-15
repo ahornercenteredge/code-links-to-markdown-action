@@ -2907,11 +2907,11 @@ async function mergeCode(filePath) {
             }
             const replacement = await _extractFileLines(file, lines);
             if (replacement) {
+                ws.write('```\r\n');
                 for (const l of replacement) {
-                    ws.write('```\r\n');
                     ws.write(`${l}\r\n`);
-                    ws.write('```\r\n');
                 }
+                ws.write('```\r\n');
                 continue;
             }
         }
