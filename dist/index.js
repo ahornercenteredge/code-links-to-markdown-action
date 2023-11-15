@@ -2801,6 +2801,7 @@ const path_1 = __importDefault(__nccwpck_require__(17));
 async function run() {
     try {
         const root = core.getInput('rootPath');
+        const startdir = __dirname;
         process.chdir(root);
         // get all the markdown files, starting from the rootPath
         core.debug(`rootPath: ${root}`);
@@ -2810,6 +2811,7 @@ async function run() {
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
             core.debug((await (0, promises_1.readFile)(file)).toString());
         }
+        process.chdir(startdir);
         core.debug(files.join(', '));
     }
     catch (error) {

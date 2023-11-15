@@ -11,6 +11,7 @@ import path from 'path'
 export async function run(): Promise<void> {
   try {
     const root: string = core.getInput('rootPath')
+    const startdir = __dirname
     process.chdir(root)
 
     // get all the markdown files, starting from the rootPath
@@ -21,6 +22,8 @@ export async function run(): Promise<void> {
       await mergeCode(path.join(root, file))
       core.debug((await readFile(file)).toString())
     }
+
+    process.chdir(startdir)
 
     core.debug(files.join(', '))
   } catch (error) {
