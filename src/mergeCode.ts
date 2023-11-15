@@ -31,7 +31,7 @@ export async function mergeCode(filePath: string): Promise<void> {
         core.debug(`found match in file ${filePath}: ${match.join(' : ')}`)
         // Get the replacement text
         const args = match[1].split('|')
-        const file = path.resolve(args[0])
+        const file = fs.realpathSync(args[0])
         core.debug(args[0])
         core.debug(file)
         if (!fs.existsSync(file)) {

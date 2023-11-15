@@ -2857,7 +2857,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.mergeCode = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const fs_1 = __importDefault(__nccwpck_require__(147));
-const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
@@ -2886,7 +2885,7 @@ async function mergeCode(filePath) {
                 core.debug(`found match in file ${filePath}: ${match.join(' : ')}`);
                 // Get the replacement text
                 const args = match[1].split('|');
-                const file = path_1.default.resolve(args[0]);
+                const file = fs_1.default.realpathSync(args[0]);
                 core.debug(args[0]);
                 core.debug(file);
                 if (!fs_1.default.existsSync(file)) {
