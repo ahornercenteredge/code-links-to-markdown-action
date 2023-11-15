@@ -115,11 +115,11 @@ async function _extractFileLines(
     })
 
     let result = ''
-    let i = 0
+    let i = 1
     rl.on('line', line => {
       line = line.toString()
-      core.debug(`reading line ${i} from file: ${line}`)
       if (range != null && range.length === 1 && i === parseInt(range[0])) {
+        core.debug(`extracting line ${i} from file: ${line}`)
         result += line
       } else if (
         range != null &&
@@ -127,8 +127,10 @@ async function _extractFileLines(
         i >= parseInt(range[0]) &&
         i <= parseInt(range[1])
       ) {
+        core.debug(`extracting line ${i} from file: ${line}`)
         result += line
-      } else {
+      } else if (range === null) {
+        core.debug(`extracting line ${i} from file: ${line}`)
         result += line
       }
       i++

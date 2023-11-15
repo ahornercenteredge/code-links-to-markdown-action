@@ -2792,7 +2792,7 @@ exports.run = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const listFiles_1 = __nccwpck_require__(139);
 const mergeCode_1 = __nccwpck_require__(858);
-const promises_1 = __importDefault(__nccwpck_require__(292));
+const promises_1 = __nccwpck_require__(292);
 const path_1 = __importDefault(__nccwpck_require__(17));
 /**
  * The main function for the action.
@@ -2808,7 +2808,7 @@ async function run() {
         for (const file of files) {
             core.debug(`checking file: ${path_1.default.join(root, file)}`);
             await (0, mergeCode_1.mergeCode)(path_1.default.join(root, file));
-            core.debug((await promises_1.default.readFile(file)).toString());
+            core.debug((await (0, promises_1.readFile)(file)).toString());
         }
         core.debug(files.join(', '));
     }
@@ -2957,20 +2957,22 @@ async function _extractFileLines(file, range) {
             crlfDelay: Infinity
         });
         let result = '';
-        let i = 0;
+        let i = 1;
         rl.on('line', line => {
             line = line.toString();
-            core.debug(`reading line ${i} from file: ${line}`);
             if (range != null && range.length === 1 && i === parseInt(range[0])) {
+                core.debug(`extracting line ${i} from file: ${line}`);
                 result += line;
             }
             else if (range != null &&
                 range.length === 2 &&
                 i >= parseInt(range[0]) &&
                 i <= parseInt(range[1])) {
+                core.debug(`extracting line ${i} from file: ${line}`);
                 result += line;
             }
-            else {
+            else if (range === null) {
+                core.debug(`extracting line ${i} from file: ${line}`);
                 result += line;
             }
             i++;

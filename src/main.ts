@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import { listFiles } from './listFiles'
 import { mergeCode } from './mergeCode'
-import fs from 'fs/promises'
+import { readFile } from 'fs/promises'
 import path from 'path'
 
 /**
@@ -19,7 +19,7 @@ export async function run(): Promise<void> {
     for (const file of files) {
       core.debug(`checking file: ${path.join(root, file)}`)
       await mergeCode(path.join(root, file))
-      core.debug((await fs.readFile(file)).toString())
+      core.debug((await readFile(file)).toString())
     }
 
     core.debug(files.join(', '))
