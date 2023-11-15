@@ -2927,11 +2927,6 @@ async function mergeCode(filePath) {
     ws.end();
     try {
         core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
-        // Delete the original file
-        fs_1.default.unlink(filePath, err => {
-            if (err)
-                throw err;
-        });
         // Rename the new file to replace the original
         _renameFile(tempFile, filePath);
     }

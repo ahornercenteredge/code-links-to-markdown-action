@@ -66,10 +66,6 @@ export async function mergeCode(filePath: string): Promise<void> {
   ws.end()
   try {
     core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
-    // Delete the original file
-    fs.unlink(filePath, err => {
-      if (err) throw err
-    })
     // Rename the new file to replace the original
     _renameFile(tempFile, filePath)
   } catch (err) {
