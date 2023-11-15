@@ -25,7 +25,7 @@ export async function mergeCode(filePath: string): Promise<void> {
     rs.on('data', async chunk => {
       chunk = chunk.toString()
       // Find any replaceable code blocks
-      const regex = /```CODE\((.*\))```/g
+      const regex = /```CODE\((.*)\)```/g
       const match = chunk.match(regex)
       if (match != null) {
         core.debug(`found match in file ${filePath}: ${match.join(' : ')}`)
