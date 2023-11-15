@@ -1,100 +1,83 @@
 import * as core from '@actions/core'
-import events from 'events'
 import fs from 'fs'
 import path from 'path'
-import readline from 'readline'
+import * as fsPromise from 'fs/promises'
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
  * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
  */
 export async function mergeCode(filePath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (filePath === undefined || filePath === null || filePath === '') {
-      throw new Error('file path is invalid')
+  if (filePath === undefined || filePath === null || filePath === '') {
+    throw new Error('file path is invalid')
+  }
+
+  const tempFile = `${filePath}.temp`
+  const ws = fs.createWriteStream(tempFile, {
+    encoding: 'utf8',
+    autoClose: true
+  })
+
+  ws.on('finish', async () => {
+    try {
+      core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
+      // Delete the original file
+      fs.unlink(filePath, err => {
+        if (err) throw err
+      })
+      // Rename the new file to replace the original
+      await _renameFile(tempFile, filePath)
+    } catch (err) {
+      throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`)
+    }
+  })
+  ws.on('error', error =>
+    core.debug(`Error: Error writing to ${tempFile} => ${error.message}`)
+  )
+
+  const regex = /```CODE\((.*)\)```/
+  const rl = await fsPromise.open(filePath)
+  for await (const line of rl.readLines()) {
+    const match = line.match(regex)
+    if (match != null) {
+      core.debug(`found match in file ${filePath}: ${match.join(' : ')}`)
+      // Get the replacement text
+      const args = match[1].split('|')
+      const file = path.resolve(path.dirname(filePath), args[0])
+      core.debug(args[0])
+      core.debug(file)
+      if (!fs.existsSync(file)) {
+        throw new Error('code path is invalid')
+      }
+
+      let lines: string[] | null = []
+      if (args[1]) {
+        core.debug(args[1])
+        if (args[1].includes('-')) {
+          lines = args[1].split('-')
+        } else {
+          lines.push(args[1])
+        }
+      } else {
+        lines = null
+      }
+      if (lines) {
+        core.debug(lines.join(', '))
+      }
+      const replacement = await _extractFileLines(file, lines)
+      if (replacement) {
+        for (let l of replacement) {
+          ws.write(l)
+        }
+        continue
+      }
+      core.debug(`final line: ${line}`)
     }
 
-    const tempFile = `${filePath}.temp`
-    const rl = readline.createInterface({
-      input: fs.createReadStream(filePath),
-      crlfDelay: Infinity
-    })
-    const ws = fs.createWriteStream(tempFile, {
-      encoding: 'utf8',
-      autoClose: true
-    })
+    ws.write(line)
+  }
 
-    rl.on('line', async line => {
-      line = line.toString()
-      // Find any replaceable code blocks
-      const regex = /```CODE\((.*)\)```/
-      const match = line.match(regex)
-      if (match != null) {
-        core.debug(`found match in file ${filePath}: ${match.join(' : ')}`)
-        // Get the replacement text
-        const args = match[1].split('|')
-        const file = path.resolve(path.dirname(filePath), args[0])
-        core.debug(args[0])
-        core.debug(file)
-        if (!fs.existsSync(file)) {
-          throw new Error('code path is invalid')
-        }
-
-        let lines: string[] | null = []
-        if (args[1]) {
-          core.debug(args[1])
-          if (args[1].includes('-')) {
-            lines = args[1].split('-')
-          } else {
-            lines.push(args[1])
-          }
-        } else {
-          lines = null
-        }
-        if (lines) {
-          core.debug(lines.join(', '))
-        }
-        const replacement = await _extractFileLines(file, lines)
-        if (replacement) {
-          replacement.forEach(l => {
-            ws.write(l)
-          })
-          return
-        }
-        core.debug(`final line: ${line}`)
-      }
-
-      ws.write(line)
-    })
-
-    rl.on('end', () => {
-      ws.end()
-    })
-
-    ws.on('finish', async () => {
-      try {
-        core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
-        // Delete the original file
-        fs.unlink(filePath, err => {
-          if (err) throw err
-        })
-        // Rename the new file to replace the original
-        await _renameFile(tempFile, filePath)
-        resolve()
-      } catch (err) {
-        reject(new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`))
-      }
-    })
-
-    rl.on('error', error =>
-      reject(new Error(`Error: Error reading ${filePath} => ${error.message}`))
-    )
-    ws.on('error', error =>
-      reject(
-        new Error(`Error: Error writing to ${tempFile} => ${error.message}`)
-      )
-    )
-  })
+  ws.end()
 }
 
 async function _renameFile(
@@ -117,15 +100,10 @@ async function _extractFileLines(
   range: string[] | null
 ): Promise<string[] | undefined> {
   try {
-    const rl = readline.createInterface({
-      input: fs.createReadStream(file),
-      crlfDelay: Infinity
-    })
-
     let result: string[] = []
     let i = 1
-    rl.on('line', line => {
-      line = line.toString()
+    const rl = await fsPromise.open(file)
+    for await (const line of rl.readLines()) {
       if (range != null && range.length === 1 && i === parseInt(range[0])) {
         core.debug(`extracting line ${i} from file: ${line}`)
         result.push(line)
@@ -142,9 +120,8 @@ async function _extractFileLines(
         result.push(line)
       }
       i++
-    })
+    }
 
-    await events.once(rl, 'close')
     return result
   } catch (err) {
     core.debug(`ERROR: ${err}`)

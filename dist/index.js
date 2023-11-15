@@ -2866,93 +2866,81 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.mergeCode = void 0;
 const core = __importStar(__nccwpck_require__(186));
-const events_1 = __importDefault(__nccwpck_require__(361));
 const fs_1 = __importDefault(__nccwpck_require__(147));
 const path_1 = __importDefault(__nccwpck_require__(17));
-const readline_1 = __importDefault(__nccwpck_require__(521));
+const fsPromise = __importStar(__nccwpck_require__(292));
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
  * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
  */
 async function mergeCode(filePath) {
-    return new Promise((resolve, reject) => {
-        if (filePath === undefined || filePath === null || filePath === '') {
-            throw new Error('file path is invalid');
+    if (filePath === undefined || filePath === null || filePath === '') {
+        throw new Error('file path is invalid');
+    }
+    const tempFile = `${filePath}.temp`;
+    const ws = fs_1.default.createWriteStream(tempFile, {
+        encoding: 'utf8',
+        autoClose: true
+    });
+    ws.on('finish', async () => {
+        try {
+            core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
+            // Delete the original file
+            fs_1.default.unlink(filePath, err => {
+                if (err)
+                    throw err;
+            });
+            // Rename the new file to replace the original
+            await _renameFile(tempFile, filePath);
         }
-        const tempFile = `${filePath}.temp`;
-        const rl = readline_1.default.createInterface({
-            input: fs_1.default.createReadStream(filePath),
-            crlfDelay: Infinity
-        });
-        const ws = fs_1.default.createWriteStream(tempFile, {
-            encoding: 'utf8',
-            autoClose: true
-        });
-        rl.on('line', async (line) => {
-            line = line.toString();
-            // Find any replaceable code blocks
-            const regex = /```CODE\((.*)\)```/;
-            const match = line.match(regex);
-            if (match != null) {
-                core.debug(`found match in file ${filePath}: ${match.join(' : ')}`);
-                // Get the replacement text
-                const args = match[1].split('|');
-                const file = path_1.default.resolve(path_1.default.dirname(filePath), args[0]);
-                core.debug(args[0]);
-                core.debug(file);
-                if (!fs_1.default.existsSync(file)) {
-                    throw new Error('code path is invalid');
-                }
-                let lines = [];
-                if (args[1]) {
-                    core.debug(args[1]);
-                    if (args[1].includes('-')) {
-                        lines = args[1].split('-');
-                    }
-                    else {
-                        lines.push(args[1]);
-                    }
+        catch (err) {
+            throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`);
+        }
+    });
+    ws.on('error', error => core.debug(`Error: Error writing to ${tempFile} => ${error.message}`));
+    const regex = /```CODE\((.*)\)```/;
+    const rl = await fsPromise.open(filePath);
+    for await (const line of rl.readLines()) {
+        const match = line.match(regex);
+        if (match != null) {
+            core.debug(`found match in file ${filePath}: ${match.join(' : ')}`);
+            // Get the replacement text
+            const args = match[1].split('|');
+            const file = path_1.default.resolve(path_1.default.dirname(filePath), args[0]);
+            core.debug(args[0]);
+            core.debug(file);
+            if (!fs_1.default.existsSync(file)) {
+                throw new Error('code path is invalid');
+            }
+            let lines = [];
+            if (args[1]) {
+                core.debug(args[1]);
+                if (args[1].includes('-')) {
+                    lines = args[1].split('-');
                 }
                 else {
-                    lines = null;
+                    lines.push(args[1]);
                 }
-                if (lines) {
-                    core.debug(lines.join(', '));
+            }
+            else {
+                lines = null;
+            }
+            if (lines) {
+                core.debug(lines.join(', '));
+            }
+            const replacement = await _extractFileLines(file, lines);
+            if (replacement) {
+                for (let l of replacement) {
+                    ws.write(l);
                 }
-                const replacement = await _extractFileLines(file, lines);
-                if (replacement) {
-                    replacement.forEach(l => {
-                        ws.write(l);
-                    });
-                    return;
-                }
-                core.debug(`final line: ${line}`);
+                continue;
             }
-            ws.write(line);
-        });
-        rl.on('end', () => {
-            ws.end();
-        });
-        ws.on('finish', async () => {
-            try {
-                core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
-                // Delete the original file
-                fs_1.default.unlink(filePath, err => {
-                    if (err)
-                        throw err;
-                });
-                // Rename the new file to replace the original
-                await _renameFile(tempFile, filePath);
-                resolve();
-            }
-            catch (err) {
-                reject(new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`));
-            }
-        });
-        rl.on('error', error => reject(new Error(`Error: Error reading ${filePath} => ${error.message}`)));
-        ws.on('error', error => reject(new Error(`Error: Error writing to ${tempFile} => ${error.message}`)));
-    });
+            core.debug(`final line: ${line}`);
+        }
+        ws.write(line);
+    }
+    ws.end();
 }
 exports.mergeCode = mergeCode;
 async function _renameFile(oldPath, newPath) {
@@ -2969,14 +2957,10 @@ async function _renameFile(oldPath, newPath) {
 }
 async function _extractFileLines(file, range) {
     try {
-        const rl = readline_1.default.createInterface({
-            input: fs_1.default.createReadStream(file),
-            crlfDelay: Infinity
-        });
         let result = [];
         let i = 1;
-        rl.on('line', line => {
-            line = line.toString();
+        const rl = await fsPromise.open(file);
+        for await (const line of rl.readLines()) {
             if (range != null && range.length === 1 && i === parseInt(range[0])) {
                 core.debug(`extracting line ${i} from file: ${line}`);
                 result.push(line);
@@ -2993,8 +2977,7 @@ async function _extractFileLines(file, range) {
                 result.push(line);
             }
             i++;
-        });
-        await events_1.default.once(rl, 'close');
+        }
         return result;
     }
     catch (err) {
@@ -3083,14 +3066,6 @@ module.exports = require("os");
 
 "use strict";
 module.exports = require("path");
-
-/***/ }),
-
-/***/ 521:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("readline");
 
 /***/ }),
 
