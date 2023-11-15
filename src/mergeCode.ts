@@ -58,7 +58,6 @@ export async function mergeCode(filePath: string): Promise<void> {
         }
         continue
       }
-      core.debug(`final line: ${line}`)
     }
 
     ws.write(line)

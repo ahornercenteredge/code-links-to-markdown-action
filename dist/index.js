@@ -2921,7 +2921,6 @@ async function mergeCode(filePath) {
                 }
                 continue;
             }
-            core.debug(`final line: ${line}`);
         }
         ws.write(line);
     }
