@@ -55,12 +55,14 @@ export async function mergeCode(filePath: string): Promise<void> {
       if (replacement) {
         for (const l of replacement) {
           ws.write(l)
+          ws.write('\r\n')
         }
         continue
       }
     }
 
     ws.write(line)
+    ws.write('\r\n')
   }
 
   ws.end()
