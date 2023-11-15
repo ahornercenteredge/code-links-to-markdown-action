@@ -18,7 +18,7 @@ export async function mergeCode(filePath: string): Promise<void> {
     autoClose: true
   })
 
-  ws.on('finish', async () => {
+  ws.on('finish', () => {
     try {
       core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
       // Delete the original file
@@ -26,7 +26,7 @@ export async function mergeCode(filePath: string): Promise<void> {
         if (err) throw err
       })
       // Rename the new file to replace the original
-      await _renameFile(tempFile, filePath)
+      _renameFile(tempFile, filePath)
     } catch (err) {
       throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`)
     }
@@ -66,7 +66,7 @@ export async function mergeCode(filePath: string): Promise<void> {
       }
       const replacement = await _extractFileLines(file, lines)
       if (replacement) {
-        for (let l of replacement) {
+        for (const l of replacement) {
           ws.write(l)
         }
         continue
@@ -80,18 +80,11 @@ export async function mergeCode(filePath: string): Promise<void> {
   ws.end()
 }
 
-async function _renameFile(
-  oldPath: fs.PathLike,
-  newPath: fs.PathLike
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    fs.rename(oldPath, newPath, error => {
-      if (error) {
-        reject(error)
-      } else {
-        resolve()
-      }
-    })
+function _renameFile(oldPath: fs.PathLike, newPath: fs.PathLike): void {
+  fs.rename(oldPath, newPath, error => {
+    if (error) {
+      throw error
+    }
   })
 }
 

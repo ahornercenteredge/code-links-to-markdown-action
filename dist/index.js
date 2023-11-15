@@ -2883,7 +2883,7 @@ async function mergeCode(filePath) {
         encoding: 'utf8',
         autoClose: true
     });
-    ws.on('finish', async () => {
+    ws.on('finish', () => {
         try {
             core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
             // Delete the original file
@@ -2892,7 +2892,7 @@ async function mergeCode(filePath) {
                     throw err;
             });
             // Rename the new file to replace the original
-            await _renameFile(tempFile, filePath);
+            _renameFile(tempFile, filePath);
         }
         catch (err) {
             throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`);
@@ -2931,7 +2931,7 @@ async function mergeCode(filePath) {
             }
             const replacement = await _extractFileLines(file, lines);
             if (replacement) {
-                for (let l of replacement) {
+                for (const l of replacement) {
                     ws.write(l);
                 }
                 continue;
@@ -2943,16 +2943,11 @@ async function mergeCode(filePath) {
     ws.end();
 }
 exports.mergeCode = mergeCode;
-async function _renameFile(oldPath, newPath) {
-    return new Promise((resolve, reject) => {
-        fs_1.default.rename(oldPath, newPath, error => {
-            if (error) {
-                reject(error);
-            }
-            else {
-                resolve();
-            }
-        });
+function _renameFile(oldPath, newPath) {
+    fs_1.default.rename(oldPath, newPath, error => {
+        if (error) {
+            throw error;
+        }
     });
 }
 async function _extractFileLines(file, range) {
