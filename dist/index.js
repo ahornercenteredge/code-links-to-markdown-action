@@ -2816,6 +2816,8 @@ async function run() {
             });
             core.debug(contents.toString());
         }
+        const filestwo = await (0, listFiles_1.listFiles)(root);
+        core.debug(filestwo.join(', '));
         process.chdir(startdir);
         core.debug(files.join(', '));
     }
@@ -2920,7 +2922,6 @@ async function mergeCode(filePath) {
                 }
                 const replacement = await _extractFileLines(file, lines);
                 if (replacement) {
-                    core.debug(replacement.join('\\n'));
                     line = replacement.join('\n');
                 }
                 core.debug(`final line: ${line}`);
@@ -2932,6 +2933,7 @@ async function mergeCode(filePath) {
         });
         ws.on('finish', async () => {
             try {
+                core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
                 // Delete the original file
                 fs_1.default.unlink(filePath, err => {
                     if (err)

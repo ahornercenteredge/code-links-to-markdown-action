@@ -31,6 +31,9 @@ export async function run(): Promise<void> {
       core.debug(contents.toString())
     }
 
+    const filestwo = await listFiles(root)
+    core.debug(filestwo.join(', '))
+
     process.chdir(startdir)
 
     core.debug(files.join(', '))

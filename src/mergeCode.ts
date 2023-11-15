@@ -56,7 +56,6 @@ export async function mergeCode(filePath: string): Promise<void> {
         }
         const replacement = await _extractFileLines(file, lines)
         if (replacement) {
-          core.debug(replacement.join('\\n'))
           line = replacement.join('\n')
         }
         core.debug(`final line: ${line}`)
@@ -71,6 +70,7 @@ export async function mergeCode(filePath: string): Promise<void> {
 
     ws.on('finish', async () => {
       try {
+        core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
         // Delete the original file
         fs.unlink(filePath, err => {
           if (err) throw err
