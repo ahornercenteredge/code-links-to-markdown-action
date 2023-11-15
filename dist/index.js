@@ -2858,6 +2858,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.mergeCode = void 0;
 const core = __importStar(__nccwpck_require__(186));
 const fs_1 = __importDefault(__nccwpck_require__(147));
+const readline_1 = __importDefault(__nccwpck_require__(521));
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
@@ -2951,30 +2952,33 @@ async function _renameFile(oldPath, newPath) {
 }
 async function _extractFileLines(file, range) {
     return new Promise((resolve, reject) => {
-        const rs = fs_1.default.createReadStream(file, { encoding: 'utf8', autoClose: true });
+        const rl = readline_1.default.createInterface({
+            input: fs_1.default.createReadStream(file),
+            crlfDelay: Infinity
+        });
         let result = '';
-        let line = 0;
-        rs.on('data', chunk => {
-            chunk = chunk.toString();
-            core.debug(`reading line ${line} from file: ${chunk}`);
-            if (range != null && range.length === 1 && line === parseInt(range[0])) {
-                result += chunk;
+        let i = 0;
+        rl.on('line', line => {
+            line = line.toString();
+            core.debug(`reading line ${i} from file: ${line}`);
+            if (range != null && range.length === 1 && i === parseInt(range[0])) {
+                result += line;
             }
             else if (range != null &&
                 range.length === 2 &&
-                line >= parseInt(range[0]) &&
-                line <= parseInt(range[1])) {
-                result += chunk;
+                i >= parseInt(range[0]) &&
+                i <= parseInt(range[1])) {
+                result += line;
             }
             else {
-                result += chunk;
+                result += line;
             }
-            line++;
+            i++;
         });
-        rs.on('end', () => {
+        rl.on('end', () => {
             resolve(result);
         });
-        rs.on('error', err => {
+        rl.on('error', err => {
             reject(err);
         });
     });
@@ -3060,6 +3064,14 @@ module.exports = require("os");
 
 "use strict";
 module.exports = require("path");
+
+/***/ }),
+
+/***/ 521:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("readline");
 
 /***/ }),
 

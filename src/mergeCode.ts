@@ -1,6 +1,6 @@
 import * as core from '@actions/core'
 import fs from 'fs'
-import path from 'path'
+import readline from 'readline'
 /**
  * Wait for a number of milliseconds.
  * @param milliseconds The number of milliseconds to wait.
@@ -109,32 +109,36 @@ async function _extractFileLines(
   range: string[] | null
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const rs = fs.createReadStream(file, { encoding: 'utf8', autoClose: true })
+    const rl = readline.createInterface({
+      input: fs.createReadStream(file),
+      crlfDelay: Infinity
+    })
+
     let result = ''
-    let line = 0
-    rs.on('data', chunk => {
-      chunk = chunk.toString()
-      core.debug(`reading line ${line} from file: ${chunk}`)
-      if (range != null && range.length === 1 && line === parseInt(range[0])) {
-        result += chunk
+    let i = 0
+    rl.on('line', line => {
+      line = line.toString()
+      core.debug(`reading line ${i} from file: ${line}`)
+      if (range != null && range.length === 1 && i === parseInt(range[0])) {
+        result += line
       } else if (
         range != null &&
         range.length === 2 &&
-        line >= parseInt(range[0]) &&
-        line <= parseInt(range[1])
+        i >= parseInt(range[0]) &&
+        i <= parseInt(range[1])
       ) {
-        result += chunk
+        result += line
       } else {
-        result += chunk
+        result += line
       }
-      line++
+      i++
     })
 
-    rs.on('end', () => {
+    rl.on('end', () => {
       resolve(result)
     })
 
-    rs.on('error', err => {
+    rl.on('error', err => {
       reject(err)
     })
   })
