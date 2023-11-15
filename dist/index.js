@@ -2883,21 +2883,6 @@ async function mergeCode(filePath) {
         encoding: 'utf8',
         autoClose: true
     });
-    ws.on('finish', () => {
-        try {
-            core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
-            // Delete the original file
-            fs_1.default.unlink(filePath, err => {
-                if (err)
-                    throw err;
-            });
-            // Rename the new file to replace the original
-            _renameFile(tempFile, filePath);
-        }
-        catch (err) {
-            throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`);
-        }
-    });
     ws.on('error', error => core.debug(`Error: Error writing to ${tempFile} => ${error.message}`));
     const regex = /```CODE\((.*)\)```/;
     const rl = await fsPromise.open(filePath);
@@ -2941,6 +2926,19 @@ async function mergeCode(filePath) {
         ws.write(line);
     }
     ws.end();
+    try {
+        core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`);
+        // Delete the original file
+        fs_1.default.unlink(filePath, err => {
+            if (err)
+                throw err;
+        });
+        // Rename the new file to replace the original
+        _renameFile(tempFile, filePath);
+    }
+    catch (err) {
+        throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`);
+    }
 }
 exports.mergeCode = mergeCode;
 function _renameFile(oldPath, newPath) {

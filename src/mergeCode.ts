@@ -18,19 +18,6 @@ export async function mergeCode(filePath: string): Promise<void> {
     autoClose: true
   })
 
-  ws.on('finish', () => {
-    try {
-      core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
-      // Delete the original file
-      fs.unlink(filePath, err => {
-        if (err) throw err
-      })
-      // Rename the new file to replace the original
-      _renameFile(tempFile, filePath)
-    } catch (err) {
-      throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`)
-    }
-  })
   ws.on('error', error =>
     core.debug(`Error: Error writing to ${tempFile} => ${error.message}`)
   )
@@ -78,6 +65,17 @@ export async function mergeCode(filePath: string): Promise<void> {
   }
 
   ws.end()
+  try {
+    core.debug(`Finished merge. Replacing ${filePath} with ${tempFile}`)
+    // Delete the original file
+    fs.unlink(filePath, err => {
+      if (err) throw err
+    })
+    // Rename the new file to replace the original
+    _renameFile(tempFile, filePath)
+  } catch (err) {
+    throw new Error(`Error renaming ${filePath} to ${tempFile}: ${err}`)
+  }
 }
 
 function _renameFile(oldPath: fs.PathLike, newPath: fs.PathLike): void {
