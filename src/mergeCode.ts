@@ -28,7 +28,7 @@ export async function mergeCode(filePath: string): Promise<void> {
       const regex = /```CODE\((.*\))```/g
       const match = chunk.match(regex)
       if (match != null) {
-        core.debug(`found match in file ${filePath}: ${match[0]}`)
+        core.debug(`found match in file ${filePath}: ${match.join(' : ')}`)
         // Get the replacement text
         const args = match[1].split('|')
         const file = path.resolve(args[0])

@@ -2883,7 +2883,7 @@ async function mergeCode(filePath) {
             const regex = /```CODE\((.*\))```/g;
             const match = chunk.match(regex);
             if (match != null) {
-                core.debug(`found match in file ${filePath}: ${match[0]}`);
+                core.debug(`found match in file ${filePath}: ${match.join(' : ')}`);
                 // Get the replacement text
                 const args = match[1].split('|');
                 const file = path_1.default.resolve(args[0]);
