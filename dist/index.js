@@ -2880,7 +2880,7 @@ async function mergeCode(filePath) {
         rs.on('data', async (chunk) => {
             chunk = chunk.toString();
             // Find any replaceable code blocks
-            const regex = /```CODE\((.*)\)```/g;
+            const regex = /```CODE\((.*)\)```/;
             const match = chunk.match(regex);
             if (match != null) {
                 core.debug(`found match in file ${filePath}: ${match.join(' : ')}`);
