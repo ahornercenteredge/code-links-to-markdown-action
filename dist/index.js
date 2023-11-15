@@ -2801,6 +2801,7 @@ const path_1 = __importDefault(__nccwpck_require__(17));
 async function run() {
     try {
         const root = core.getInput('rootPath');
+        process.chdir(root);
         // get all the markdown files, starting from the rootPath
         core.debug(`rootPath: ${root}`);
         const files = await (0, listFiles_1.listFiles)(root);

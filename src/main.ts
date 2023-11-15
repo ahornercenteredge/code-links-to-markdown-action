@@ -11,6 +11,7 @@ import path from 'path'
 export async function run(): Promise<void> {
   try {
     const root: string = core.getInput('rootPath')
+    process.chdir(root)
 
     // get all the markdown files, starting from the rootPath
     core.debug(`rootPath: ${root}`)
