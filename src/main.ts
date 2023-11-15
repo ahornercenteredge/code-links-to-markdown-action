@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import { listFiles } from './listFiles'
+import { mergeCode } from './mergeCode'
 
 /**
  * The main function for the action.
@@ -12,6 +13,9 @@ export async function run(): Promise<void> {
     // get all the markdown files, starting from the rootPath
     core.debug(`rootPath: ${root}`)
     const files = await listFiles(root)
+    for (let file in files) {
+      mergeCode(file)
+    }
 
     core.debug(files.join(', '))
   } catch (error) {
