@@ -109,7 +109,7 @@ async function _extractFileLines(
       }
       i++
     }
-
+    result = result.filter(() => true)
     return result
   } catch (err) {
     core.debug(`ERROR: ${err}`)
